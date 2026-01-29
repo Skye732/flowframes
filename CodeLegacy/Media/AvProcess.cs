@@ -143,7 +143,7 @@ namespace Flowframes
             ffprobe.StartInfo.Arguments = $"/C cd /D {GetAvDir().Wrap()} & ffprobe {args}";
 
             if (settings.LoggingMode != LogMode.Hidden) Logger.Log("Running FFprobe...", false);
-            Logger.Log($"ffprobe {args}", true, false, "ffmpeg");
+            Logger.Log($"ffprobe {args}", true, false, "ffmpeg", toConsole: Cli.Verbose);
 
             if (!asyncOutput)
                 return await Task.Run(() => OsUtils.GetProcStdOut(ffprobe));
@@ -166,7 +166,7 @@ namespace Flowframes
         {
             Process ffprobe = OsUtils.NewProcess(true);
             ffprobe.StartInfo.Arguments = $"/C cd /D {GetAvDir().Wrap()} & ffprobe.exe {args}";
-            Logger.Log($"ffprobe {args}", true, false, "ffmpeg");
+            Logger.Log($"ffprobe {args}", true, false, "ffmpeg", toConsole: Cli.Verbose);
             ffprobe.Start();
             ffprobe.WaitForExit();
             string output = ffprobe.StandardOutput.ReadToEnd();

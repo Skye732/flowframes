@@ -19,7 +19,7 @@ namespace Flowframes.Media
             if (filesize > 0 && cache.ContainsKey(hash))
             {
                 Size cachedVal = cache[hash];
-                Logger.Log($"Resolution of '{Path.GetFileName(path)}': {cachedVal.Width}x{cachedVal.Height} [Cached]", true);
+                Logger.Log($"Resolution of '{Path.GetFileName(path)}': {cachedVal.Width}x{cachedVal.Height} [Cached]", true, toConsole: Cli.Verbose);
                 return cachedVal;
             }
 

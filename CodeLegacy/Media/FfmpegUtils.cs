@@ -68,7 +68,7 @@ namespace Flowframes.Media
                             int frameCount = countFrames ? await GetFrameCountCached.GetFrameCountAsync(path) : 0;
                             FpsInfo fps = await GetFps(path, str, idx, (Fraction)defaultFps, frameCount, allowFpsOverride: !mediaFile.IsVfr);
                             VideoStream vStream = new VideoStream(lang, title, codec, codecLong, pixFmt, kbits, res, sar, dar, fps, frameCount) { Index = idx, IsDefault = def };
-                            Logger.Log($"Video stream: {vStream}", true);
+                            Logger.Log(vStream, true);
                             streams.Add(vStream);
                             continue;
                         }
@@ -88,7 +88,7 @@ namespace Flowframes.Media
                             AudioStream aStream = new AudioStream(lang, title, codec, codecLong, kbits, sampleRate, channels, layout);
                             aStream.Index = idx;
                             aStream.IsDefault = def;
-                            Logger.Log($"Audio stream: {aStream}", true);
+                            Logger.Log(aStream, true);
                             streams.Add(aStream);
                             continue;
                         }
@@ -103,7 +103,7 @@ namespace Flowframes.Media
                             SubtitleStream sStream = new SubtitleStream(lang, title, codec, codecLong, bitmap);
                             sStream.Index = idx;
                             sStream.IsDefault = def;
-                            Logger.Log($"Subtitle stream: {sStream}", true);
+                            // Logger.Log(sStream", true);
                             streams.Add(sStream);
                             continue;
                         }

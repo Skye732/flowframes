@@ -595,7 +595,8 @@ namespace Flowframes.Forms.Main
 
         public void ValidateFactor()
         {
-            interpFactorCombox.Text = $"x{MainUiFunctions.ValidateInterpFactor(interpFactorCombox.GetFloat())}";
+            float validFactor = MainUiFunctions.ValidateInterpFactor(interpFactorCombox.GetFloat());
+            interpFactorCombox.Text = $"x{validFactor}";
         }
 
         public void SetWorking(bool state, bool allowCancel = true)

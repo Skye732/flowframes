@@ -50,7 +50,7 @@ namespace Flowframes.Ui
                 string fpsStr = fps.Float > 0 ? FormatUtils.Fraction(fps) : "Not Found";
                 Program.mainForm.currInFpsDetected = fps;
                 fpsInTbox.Text = fps.GetString();
-                Logger.Log($"Video FPS: {fpsStr} - Total Number Of Frames: {Interpolate.currentMediaFile.FrameCount}{(Interpolate.currentMediaFile.VideoExtraData.IsHdr ? " - HDR" : "")}", false, true);
+                Logger.Log($"Video FPS: {fpsStr} - Number of Frames: {Interpolate.currentMediaFile.FrameCount}{(Interpolate.currentMediaFile.VideoExtraData.IsHdr ? " - HDR" : "")}", false, true);
                 Program.mainForm.GetInputFpsTextbox().ReadOnly = (fps.Float > 0 && !Config.GetBool("allowCustomInputRate", false));
                 Program.mainForm.currInFps = fps;
                 Program.mainForm.currInFrames = Interpolate.currentMediaFile.FrameCount;
