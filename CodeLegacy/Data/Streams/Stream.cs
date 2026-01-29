@@ -14,7 +14,7 @@
 
         public override string ToString()
         {
-            return $"Stream #{Index.ToString().PadLeft(2, '0')}{(IsDefault ? "*" : "")} {Type} ({Codec})";
+            return $"Stream #{Index.ToString().PadLeft(2, '0')}{(IsDefault ? "*" : " ")} {Type} ({Codec})";
         }
     }
 }

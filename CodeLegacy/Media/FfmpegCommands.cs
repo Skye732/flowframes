@@ -42,7 +42,7 @@ namespace Flowframes
             return wrap ? filters.Wrap() : filters;
         }
 
-        public enum ModuloMode { Disabled, ForInterpolation, ForEncoding }
+        public enum ModuloMode { Any, ForInterpolation, ForEncoding }
 
         public static int GetModulo(ModuloMode mode)
         {

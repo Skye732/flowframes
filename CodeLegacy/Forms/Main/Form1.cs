@@ -348,14 +348,11 @@ namespace Flowframes.Forms.Main
 
         public void SetStatus(string str)
         {
-            Logger.Log(str, true);
+            Logger.Log($"[Status] {str}", true);
             statusLabel.Text = str;
         }
 
-        public string GetStatus()
-        {
-            return statusLabel.Text;
-        }
+        public string Status => statusLabel.Text;
 
         public void SetProgress(int percent)
         {
@@ -601,7 +598,7 @@ namespace Flowframes.Forms.Main
 
         public void SetWorking(bool state, bool allowCancel = true)
         {
-            Logger.Log($"SetWorking({state})", true);
+            Logger.Log(state ? "Working..." : "Done.", true);
             SetProgress(-1);
             Control[] controlsToDisable = new Control[] { runBtn, runStepBtn, stepSelector, settingsBtn };
             Control[] controlsToHide = new Control[] { runBtn, runStepBtn, stepSelector };

@@ -31,7 +31,7 @@ namespace Flowframes.Media
                 cache.Add(hash, size);
             }
 
-            Logger.Log($"Resolution of '{Path.GetFileName(path)}': {size.Width}x{size.Height}", true);
+            Logger.Log($"Resolution of '{Path.GetFileName(path)}': {size.Width}x{size.Height}", true, toConsole: Cli.Verbose);
             return size;
         }
 

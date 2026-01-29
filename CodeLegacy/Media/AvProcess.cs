@@ -70,7 +70,7 @@ namespace Flowframes
                 ffmpeg.StartInfo.Arguments = $"/C cd /D {GetAvDir().Wrap()} & ffmpeg {beforeArgs} {args}";
 
             if (logMode != LogMode.Hidden) Logger.Log("Running FFmpeg...", false);
-            Logger.Log($"ffmpeg {beforeArgs} {args}", true, false, "ffmpeg");
+            Logger.Log($"ffmpeg {beforeArgs} {args}", true, false, "ffmpeg", toConsole: Cli.Verbose);
 
             ffmpeg.OutputDataReceived += (sender, outLine) => { AvOutputHandler.LogOutput(outLine.Data, ref processOutput, "ffmpeg", logMode, progressBar); timeSinceLastOutput.Sw.Restart(); };
             ffmpeg.ErrorDataReceived += (sender, outLine) => { AvOutputHandler.LogOutput(outLine.Data, ref processOutput, "ffmpeg", logMode, progressBar); timeSinceLastOutput.Sw.Restart(); };

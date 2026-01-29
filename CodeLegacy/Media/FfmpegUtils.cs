@@ -549,7 +549,7 @@ namespace Flowframes.Media
             // If all are supported, simply copy all streams
             if (supported.All(x => x.Value))
             {
-                Logger.Log($"All audio codecs are supported by {outFormat}, copying all.", true, false);
+                Logger.Log($"[Mux] All audio codecs are supported by {outFormat}, copying all.", true, false);
                 return "-map 1:a -c:a copy";
             }
 
@@ -564,7 +564,7 @@ namespace Flowframes.Media
                 relIdx++;
             }
 
-            Logger.Log($"{outFormat} audio handling: {log.TrimEnd(' ', '-')}", true, false);
+            Logger.Log($"[Mux] {outFormat} audio handling: {log.TrimEnd(' ', '-')}", true, false);
             return args.TrimEnd();
         }
 
@@ -594,7 +594,7 @@ namespace Flowframes.Media
             // If all are supported, simply copy all streams
             if (codec.All(x => x.Value == "copy"))
             {
-                Logger.Log($"All subtitle codecs are supported by {outFormat}, copying all.", true, false);
+                Logger.Log($"[Mux] All subtitle codecs are supported by {outFormat}, copying all.", true, false);
                 return "-map 1:s -c:s copy";
             }
 
@@ -609,7 +609,7 @@ namespace Flowframes.Media
                 relIdx++;
             }
 
-            Logger.Log($"{outFormat} subtitle handling: {log.TrimEnd(' ', '-')}", true, false);
+            Logger.Log($"[Mux] {outFormat} subtitle handling: {log.TrimEnd(' ', '-')}", true, false);
             return args.TrimEnd();
         }
 
