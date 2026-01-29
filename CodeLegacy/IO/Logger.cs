@@ -73,7 +73,7 @@ namespace Flowframes
                 _lastUi = msg;
 
             if (entry.toConsole)
-                Console.WriteLine(msg);
+                Console.WriteLine(entry.hidden ? msg : $"\u001b[96m{msg}\u001b[0m");
 
             try
             {
