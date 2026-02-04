@@ -11,8 +11,7 @@ jobs:
     # 1. Get the source code
     - name: Checkout Code
       uses: actions/checkout@v4
-      with:
-        submodules: recursive
+      # (Note: I deleted the "with: submodules: recursive" lines here)
 
     # 2. Setup the Compiler (MSBuild)
     - name: Setup MSBuild
