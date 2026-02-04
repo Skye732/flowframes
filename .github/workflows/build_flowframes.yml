@@ -1,7 +1,7 @@
-name: Build Flowframes
+name: Build Flowframes (Private 1.42.0)
 
 on:
-  workflow_dispatch: # This adds the "Run Workflow" button
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,51 +11,83 @@ jobs:
     # 1. Get the source code
     - name: Checkout Code
       uses: actions/checkout@v4
-      # (Note: I deleted the "with: submodules: recursive" lines here)
 
-    # 2. Setup the Compiler (MSBuild)
+    # 2. Setup MSBuild
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
-    # 3. Setup the Package Manager (NuGet)
+    # 3. Setup NuGet
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-    # 4. Restore Dependencies (TARGETING CODELEGACY)
+    # 4. Restore Dependencies
     - name: Restore NuGet Packages
       run: nuget restore CodeLegacy/Flowframes.sln
 
-    # 5. Compile the App (TARGETING CODELEGACY)
-    - name: Build Solution
-      run: msbuild CodeLegacy/Flowframes.sln /p:Configuration=Release
-
-    # 6. THE "BRAIN TRANSPLANT" (Auto-install RIFE AI)
-    - name: Download and Install RIFE Engine
+    # 5. SET VERSION TO 1.42.0
+    - name: Set Custom Version
       shell: powershell
       run: |
-        # DISABLE THE SLOW PROGRESS BAR
-        $ProgressPreference = 'SilentlyContinue'
+        # Hardcoded version
+        $newVersion = "1.42.0"
         
-        $url = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
-        $dest = "rife.zip"
+        Write-Host "Forcing Flowframes version to: $newVersion"
         
-        Write-Host "Downloading RIFE (Fast Mode)..."
-        Invoke-WebRequest -Uri $url -OutFile $dest
+        # Find the AssemblyInfo.cs file
+        $assemblyInfo = "CodeLegacy/Properties/AssemblyInfo.cs"
         
-        Expand-Archive -Path $dest -DestinationPath "extracted_rife"
+        # Read the file
+        $content = Get-Content $assemblyInfo
         
-        # Target the CodeLegacy output folder
-        $deployPath = "CodeLegacy/bin/Release"
+        # Replace the old version numbers with 1.42.0
+        $content = $content -replace 'AssemblyVersion\(".*?"\)', "AssemblyVersion(""$newVersion"")"
+        $content = $content -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(""$newVersion"")"
         
-        # Create the folder structure
-        New-Item -ItemType Directory -Force -Path "$deployPath/data/pkgs/rife-ncnn-vulkan"
+        # Save it back
+        Set-Content $assemblyInfo $content
         
-        # Copy the AI engine
-        Copy-Item -Path "extracted_rife/rife-ncnn-vulkan-20221029-windows/*" -Destination "$deployPath/data/pkgs/rife-ncnn-vulkan" -Recurse
+        Write-Host "Version updated successfully!"
 
-    # 7. Upload the Result
-    - name: Upload Artifact
+    # 6. Compile (FORCE x64 + RELEASE)
+    - name: Build Solution
+      run: msbuild CodeLegacy/Flowframes.sln /p:Configuration=Release /p:Platform=x64
+
+    # 7. Install Dependencies (FFmpeg + RIFE)
+    - name: Install AI and Video Engines
+      shell: powershell
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        $baseDir = "CodeLegacy/bin/x64/Release"
+        $pkgDir = "$baseDir/FlowframesData/pkgs"
+        
+        # --- A. RIFE AI ---
+        Write-Host "Downloading RIFE..."
+        $rifeUrl = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
+        Invoke-WebRequest -Uri $rifeUrl -OutFile "rife.zip"
+        Expand-Archive -Path "rife.zip" -DestinationPath "extracted_rife"
+        
+        $rifeDest = "$pkgDir/rife-ncnn-vulkan"
+        New-Item -ItemType Directory -Force -Path $rifeDest
+        Copy-Item -Path "extracted_rife/rife-ncnn-vulkan-20221029-windows/*" -Destination $rifeDest -Recurse
+        
+        # Create models.json
+        $jsonContent = '{ "version": 1, "models": [ { "id": "rife-v4.6", "name": "RIFE 4.6", "path": "rife-v4.6" } ] }'
+        Set-Content -Path "$rifeDest/models.json" -Value $jsonContent
+
+        # --- B. FFMPEG ---
+        Write-Host "Downloading FFmpeg..."
+        $ffmpegUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
+        Invoke-WebRequest -Uri $ffmpegUrl -OutFile "ffmpeg.zip"
+        Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp"
+        
+        $avDest = "$pkgDir/av"
+        New-Item -ItemType Directory -Force -Path $avDest
+        $binFolder = Get-ChildItem -Path "ffmpeg_temp" -Recurse -Directory | Where-Object { $_.Name -eq "bin" } | Select-Object -First 1
+        Copy-Item -Path "$($binFolder.FullName)/*.exe" -Destination $avDest
+
+    # 8. Upload as Private Artifact (Zip)
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Flowframes-Legacy-Build
-        path: CodeLegacy/bin/Release/
+        name: Flowframes-1.42.0-Build
+        path: CodeLegacy/bin/x64/Release/
