@@ -22,6 +22,11 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
+# --- PASTE THE NEW BLOCK HERE ---
+    - name: Clone NmkdUtils
+      run: git clone https://github.com/n00mkrad/nmkd-utils.git ../nmkd-utils
+    # --------------------------------
+
    # 4. Restore Dependencies
     - name: Restore NuGet Packages
       run: nuget restore Flowframes/Flowframes.sln
