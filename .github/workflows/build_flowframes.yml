@@ -1,14 +1,17 @@
-name: Build Flowframes (Private 1.42.0)
+name: Build Flowframes (Public Nightly)
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write # REQUIRED to create releases
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    # 1. Get the source code
+    # 1. Get Code
     - name: Checkout Code
       uses: actions/checkout@v4
 
@@ -28,31 +31,19 @@ jobs:
     - name: Set Custom Version
       shell: powershell
       run: |
-        # Hardcoded version
         $newVersion = "1.42.0"
-        
         Write-Host "Forcing Flowframes version to: $newVersion"
-        
-        # Find the AssemblyInfo.cs file
         $assemblyInfo = "CodeLegacy/Properties/AssemblyInfo.cs"
-        
-        # Read the file
         $content = Get-Content $assemblyInfo
-        
-        # Replace the old version numbers with 1.42.0
         $content = $content -replace 'AssemblyVersion\(".*?"\)', "AssemblyVersion(""$newVersion"")"
         $content = $content -replace 'AssemblyFileVersion\(".*?"\)', "AssemblyFileVersion(""$newVersion"")"
-        
-        # Save it back
         Set-Content $assemblyInfo $content
-        
-        Write-Host "Version updated successfully!"
 
-    # 6. Compile (FORCE x64 + RELEASE)
+    # 6. Compile (x64 Release)
     - name: Build Solution
       run: msbuild CodeLegacy/Flowframes.sln /p:Configuration=Release /p:Platform=x64
 
-    # 7. Install Dependencies (FFmpeg + RIFE)
+    # 7. Install Dependencies (Fast Mode)
     - name: Install AI and Video Engines
       shell: powershell
       run: |
@@ -60,24 +51,19 @@ jobs:
         $baseDir = "CodeLegacy/bin/x64/Release"
         $pkgDir = "$baseDir/FlowframesData/pkgs"
         
-        # --- A. RIFE AI ---
+        # --- RIFE ---
         Write-Host "Downloading RIFE..."
-        $rifeUrl = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
-        Invoke-WebRequest -Uri $rifeUrl -OutFile "rife.zip"
+        Invoke-WebRequest -Uri "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip" -OutFile "rife.zip"
         Expand-Archive -Path "rife.zip" -DestinationPath "extracted_rife"
         
         $rifeDest = "$pkgDir/rife-ncnn-vulkan"
         New-Item -ItemType Directory -Force -Path $rifeDest
         Copy-Item -Path "extracted_rife/rife-ncnn-vulkan-20221029-windows/*" -Destination $rifeDest -Recurse
-        
-        # Create models.json
-        $jsonContent = '{ "version": 1, "models": [ { "id": "rife-v4.6", "name": "RIFE 4.6", "path": "rife-v4.6" } ] }'
-        Set-Content -Path "$rifeDest/models.json" -Value $jsonContent
+        Set-Content -Path "$rifeDest/models.json" -Value '{ "version": 1, "models": [ { "id": "rife-v4.6", "name": "RIFE 4.6", "path": "rife-v4.6" } ] }'
 
-        # --- B. FFMPEG ---
+        # --- FFMPEG ---
         Write-Host "Downloading FFmpeg..."
-        $ffmpegUrl = "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip"
-        Invoke-WebRequest -Uri $ffmpegUrl -OutFile "ffmpeg.zip"
+        Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile "ffmpeg.zip"
         Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg_temp"
         
         $avDest = "$pkgDir/av"
@@ -85,9 +71,20 @@ jobs:
         $binFolder = Get-ChildItem -Path "ffmpeg_temp" -Recurse -Directory | Where-Object { $_.Name -eq "bin" } | Select-Object -First 1
         Copy-Item -Path "$($binFolder.FullName)/*.exe" -Destination $avDest
 
-    # 8. Upload as Private Artifact (Zip)
-    - name: Upload Build Artifact
-      uses: actions/upload-artifact@v4
+    # 8. ZIP IT UP
+    - name: Create Zip Archive
+      shell: powershell
+      run: |
+        Compress-Archive -Path CodeLegacy/bin/x64/Release/* -DestinationPath Flowframes-Nightly.zip
+
+    # 9. PUBLISH "NIGHTLY" RELEASE
+    - name: Upload to Release
+      uses: softprops/action-gh-release@v1
       with:
-        name: Flowframes-1.42.0-Build
-        path: CodeLegacy/bin/x64/Release/
+        name: Nightly Build (v1.42.0)
+        tag_name: nightly
+        files: Flowframes-Nightly.zip
+        prerelease: true
+        overwrite: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
