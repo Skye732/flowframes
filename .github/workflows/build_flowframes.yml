@@ -1,7 +1,7 @@
 name: Build Flowframes
 
 on:
-  workflow_dispatch: # This allows you to click a button to start the build
+  workflow_dispatch: # This adds the "Run Workflow" button
 
 jobs:
   build:
@@ -22,39 +22,35 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-# --- PASTE THE NEW BLOCK HERE ---
-    - name: Clone NmkdUtils
-      run: git clone https://github.com/n00mkrad/nmkd-utils.git ../nmkd-utils
-    # --------------------------------
-
-   # 4. Restore Dependencies
+    # 4. Restore Dependencies (TARGETING CODELEGACY)
     - name: Restore NuGet Packages
-      run: nuget restore Flowframes/Flowframes.sln
+      run: nuget restore CodeLegacy/Flowframes.sln
 
-    # 5. Compile the App
+    # 5. Compile the App (TARGETING CODELEGACY)
     - name: Build Solution
-      run: msbuild Flowframes/Flowframes.sln /p:Configuration=Release
+      run: msbuild CodeLegacy/Flowframes.sln /p:Configuration=Release
 
     # 6. THE "BRAIN TRANSPLANT" (Auto-install RIFE AI)
     - name: Download and Install RIFE Engine
       shell: powershell
       run: |
-        # Download the AI Engine
         $url = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
         $dest = "rife.zip"
         Invoke-WebRequest -Uri $url -OutFile $dest
         Expand-Archive -Path $dest -DestinationPath "extracted_rife"
         
-        # Create the specific folder structure Flowframes looks for
-        $deployPath = "Flowframes/bin/x64/Release/net48"
+        # Target the CodeLegacy output folder
+        $deployPath = "CodeLegacy/bin/Release"
+        
+        # Create the folder structure
         New-Item -ItemType Directory -Force -Path "$deployPath/data/pkgs/rife-ncnn-vulkan"
         
-        # Move the AI files into the App folder
+        # Copy the AI engine
         Copy-Item -Path "extracted_rife/rife-ncnn-vulkan-20221029-windows/*" -Destination "$deployPath/data/pkgs/rife-ncnn-vulkan" -Recurse
 
-    # 7. Upload the final zip file for you
-    - name: Upload Build Artifact
+    # 7. Upload the Result
+    - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: Flowframes-Ready-To-Run
-        path: Flowframes/bin/x64/Release/net48/
+        name: Flowframes-Legacy-Build
+        path: CodeLegacy/bin/Release/
