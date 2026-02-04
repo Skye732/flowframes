@@ -33,9 +33,15 @@ jobs:
     - name: Download and Install RIFE Engine
       shell: powershell
       run: |
+        # DISABLE THE SLOW PROGRESS BAR
+        $ProgressPreference = 'SilentlyContinue'
+        
         $url = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
         $dest = "rife.zip"
+        
+        Write-Host "Downloading RIFE (Fast Mode)..."
         Invoke-WebRequest -Uri $url -OutFile $dest
+        
         Expand-Archive -Path $dest -DestinationPath "extracted_rife"
         
         # Target the CodeLegacy output folder
