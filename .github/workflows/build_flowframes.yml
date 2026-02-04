@@ -22,13 +22,13 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v2
 
-    # 4. Download necessary libraries
+   # 4. Restore Dependencies
     - name: Restore NuGet Packages
-      run: nuget restore Flowframes.sln
+      run: nuget restore Flowframes/Flowframes.sln
 
     # 5. Compile the App
     - name: Build Solution
-      run: msbuild Flowframes.sln /p:Configuration=Release /p:Platform="x64"
+      run: msbuild Flowframes/Flowframes.sln /p:Configuration=Release
 
     # 6. THE "BRAIN TRANSPLANT" (Auto-install RIFE AI)
     - name: Download and Install RIFE Engine
