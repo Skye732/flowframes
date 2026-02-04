@@ -1,0 +1,55 @@
+name: Build Flowframes
+
+on:
+  workflow_dispatch: # This allows you to click a button to start the build
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    # 1. Get the source code
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    # 2. Setup the Compiler (MSBuild)
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    # 3. Setup the Package Manager (NuGet)
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v2
+
+    # 4. Download necessary libraries
+    - name: Restore NuGet Packages
+      run: nuget restore Flowframes.sln
+
+    # 5. Compile the App
+    - name: Build Solution
+      run: msbuild Flowframes.sln /p:Configuration=Release /p:Platform="x64"
+
+    # 6. THE "BRAIN TRANSPLANT" (Auto-install RIFE AI)
+    - name: Download and Install RIFE Engine
+      shell: powershell
+      run: |
+        # Download the AI Engine
+        $url = "https://github.com/nihui/rife-ncnn-vulkan/releases/download/20221029/rife-ncnn-vulkan-20221029-windows.zip"
+        $dest = "rife.zip"
+        Invoke-WebRequest -Uri $url -OutFile $dest
+        Expand-Archive -Path $dest -DestinationPath "extracted_rife"
+        
+        # Create the specific folder structure Flowframes looks for
+        $deployPath = "Flowframes/bin/x64/Release/net48"
+        New-Item -ItemType Directory -Force -Path "$deployPath/data/pkgs/rife-ncnn-vulkan"
+        
+        # Move the AI files into the App folder
+        Copy-Item -Path "extracted_rife/rife-ncnn-vulkan-20221029-windows/*" -Destination "$deployPath/data/pkgs/rife-ncnn-vulkan" -Recurse
+
+    # 7. Upload the final zip file for you
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Flowframes-Ready-To-Run
+        path: Flowframes/bin/x64/Release/net48/
